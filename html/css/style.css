@@ -9,3 +9,8 @@ div {
 #main {
     height: 400px;
 }
+
+#tbm-block {
+    max-height: 800px;
+    overflow: auto;
+}

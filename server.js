@@ -1,13 +1,11 @@
 const http = require('http');
 const fs = require('fs');
 
-const Connection = require('tedious').Connection;
-const Request = require('tedious').Request;
+const db = require('./db.js');
 
 // HTTP server
 const server = http.createServer((req, res) => {
     var content = '';
-
     req.on('error', (err) => {
         console.error(err);
     }).on('data', (chunk) => {
@@ -15,53 +13,34 @@ const server = http.createServer((req, res) => {
         s += chunk;
         content = s.toString();
     }).on('end', () => {
+        console.log("Request:" + ` [${req.host}] ` + req.url);
         route(req, res, content);
     });
 }).listen(8080);
 
+// http content-type
+const type = {
+    ".html" : {"Content-Type": "text/html"},
+    ".css": {"Content-Type": "text/css"},
+    ".js": {"Content-Type": "application/javascript"},
+    ".ico": {"Content-Type": "image/x-ico"},
+    ".png": {"Content-Type": "image/png"},
+    ".json": {"Content-Type": "application/json"}
+}
+
+// Http route
 const route = (req, res, content) => {
     switch (req.method) {
         case 'GET':
             switch (req.url) {
                 case '/':
-                case "/html/index.html":
-                    res.writeHeader(200, {'Content-Type': 'text/html'});
-                    fs.readFile('./html/index.html', (err, data) => {
-                        if(err) {console.error(err)};
-                        res.end(data);
-                    });
-                    break;
-
-                case '/css/style.css':
-                    res.writeHeader(200, {'Content-Type': 'text/css'});
-                    fs.readFile('./html/css/style.css', (err, data) => {
-                        if(err) {console.error(err)};
-                        res.end(data);
-                    });
-                    break;
-
-                case '/script/script.js':
-                    res.writeHeader(200, {'Content-Type': 'application/javascript'});
-                    fs.readFile('./html/script/script.js', (err, data) => {
-                        if(err) {console.error(err)};
-                        res.end(data);
-                    });
-                    break;
-
-                case '/favicon.ico':
-                    res.writeHeader(200, {'Content-Type': 'image/x-ico'})
-                    fs.readFile('./favicon.ico', (err, data) => {
-                        if(err) {console.error(err)};
-                        res.end(data);
-                    });
-                    break;
-
+                    req.url += 'index.html';
+                case '/index.html':
                 case '/css/button.png':
-                    res.writeHeader(200, {'Content-Type': 'image/png'});
-                    fs.readFile('./html/res/button.png', (err, data) => {
-                        if(err) {console.error(err)};
-                        res.end(data);
-                    });
+                case '/css/style.css':
+                case '/script/script.js':
+                case '/favicon.ico':
+                    r(req, res);
                     break;
 
                 default:
@@ -73,9 +52,9 @@ const route = (req, res, content) => {
         case 'POST':
             switch (req.url) {
                 case '/data':
-                    res.writeHeader(200, {'Content-Type': 'application/json'});
+                    res.writeHeader(200, {"Content-Type": "application/json"});
                     fs.readFile('./data/data.json', (err, data) => {
-                        if(err) {console.error(err)};
+                        if (err) {console.error(err)};
                         res.end(data);
                     });
                     break;
@@ -87,14 +66,46 @@ const route = (req, res, content) => {
                     res.end(cat[index]);
                     break;
 
-                case '/favicon.ico':
-                    res.writeHeader(200, {'Content-Type': 'image/x-ico'})
-                    fs.readFile('./favicon.ico', (err, data) => {
-                        if(err) {console.error(err)};
-                        res.end(data);
+                case '/table':
+                    var sql = `use [${content}] select name from sysobjects where xtype='U';`;
+                    db.get(sql, (ans) => {
+                        var str = '';
+                        ans.forEach(function(item) {
+                            str += item + ',';
+                        }, this);
+                        res.end(str);
                     });
                     break;
-            
+
+                case '/teb':
+                    var query = content.split(',');
+                    var sql = `select top(10) * from [${query[0]}].[dbo].[${query[1]}];`;
+                    db.get(sql, (ans) => {
+                        var str = '';
+                        ans.forEach(function(line) {
+                            line.forEach(function(item) {
+                                str += item + ',';
+                            }, this);
+                            str += ';';
+                        }, this);
+                        res.end(str);
+                    });
+                    break;
+
+                case '/teh':
+                    var query = content.split(',');
+                    var sql = `select COLUMN_NAME from [${query[0]}].information_schema.columns where TABLE_NAME='${query[1]}';`;
+                    db.get(sql, (ans) => {
+                        var str = '';
+                        ans.forEach(function(line) {
+                            line.forEach(function(item) {
+                                str += item + ',';
+                            }, this);
+                        }, this);
+                        res.end(str);
+                    });
+                    break;
+
                 default:
                     raise(404, res);
                     break;
@@ -107,60 +118,21 @@ const route = (req, res, content) => {
     }
 }
 
+// Write responds
+const r = (req, res) => {
+    res.writeHeader(200, type[req.url.match(/\.\S*/)]);
+    fs.readFile('./html'+ req.url, (err, data) => {
+        if (err) {console.error(err)};
+        res.end(data);
+    });
+}
+
+// Http error
 const raise = (code, res) => {
     res.writeHeader(code, {'Content-Type': 'text/plain'});
     res.end("Reeeep...");
 }
 
+// server log control
 console.log('Server listen on port 8080...');
 
-// sql Data Transfere
-const config = {
-    userName: 'user',
-    password: '123456',
-    server: '10.188.20.220',
-    options: {
-        'rowCollectionOnRequestCompletion': true
-    }
-}
-
-const connection = new Connection(config);
-connection.on('connect', (err) => {
-    if (err) {console.error(err)} 
-    else {
-        console.log('Connected');
-        var sql = 'select [topic_name], [page_num] from [data_news_iic_03].[dbo].[T_TOPIC];'
-        executeStatement(sql);
-    }
-}).on('end', () => {
-    this.close();
-});
-
-function executeStatement(sql) {
-    request = new Request(sql, (err, rowCount, rows) => {
-        if (err) console.error(err);
-        if (fs.existsSync('./data/topic_name')) {fs.renameSync('./data/topic_name', './data/temp/'+ Math.random())};
-        if (fs.existsSync('./data/page_num')) {fs.renameSync('./data/page_num', './data/temp/'+ Math.random())};
-        rows.forEach(function(row) {
-            fs.appendFile('./data/topic_name', row[0]['value'] + '\n', (err) => {});
-            fs.appendFile('./data/page_num', row[1]['value'] + '\n', (err) => {});
-        }, this);
-        console.log(rowCount + ' items found.');
-    });
-    connection.execSql(request);
-    generator();
-}
-
-function generator() {
-    var str = fs.readFileSync('./data/page_num', 'utf-8');
-    var data = str.split('\n');
-    var cate = [];
-    for(var i = 0; i < data.length; i++) {
-        cate.push('话题' + i);
-    }
-    var m = {
-        "categories": cate,
-        "data": data
-    }
-    fs.writeFile('./data/data.json', JSON.stringify(m), (err) => {});
-}
