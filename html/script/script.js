@@ -1,15 +1,15 @@
 $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-    if($(e.target).text() === 'tab-2') {
+    if($(e.target).text() === 'Detail') {
         var myChart = echarts.init(document.getElementById('main'));
 
         myChart.showLoading();
         myChart.setOption({
             title: {
-                text: 'data_news_iic_03'
+                text: 'Fig-1'
             },
             tooltip: {},
             legend: {
-                data:['PageNum']
+                data:['热度']
             },
             xAxis: {
                 data: []
@@ -25,7 +25,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 end: 66
             }],
             series: [{
-                name: 'Num',
+                name: '热度',
                 type: 'bar',
                 data: []
             }]
@@ -37,7 +37,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                     data: data.categories
                 },
                 series: [{
-                    name: 'Num',
+                    name: '热度',
                     data: data.data
                 }]
             });
@@ -59,7 +59,7 @@ $("#news").click(() => {
     $.post('/table', '56News').done((raw) => {
         var data = raw.split(',');
         data.forEach(function(item) {
-            $("#db-1").prepend(`<li><a href="#tb" id="${item}"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
+            $("#db-1").prepend(`<li><a class="db1" href="#" id="${item}" onclick="showtb('56News,' + '${item}')"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
         }, this);
     });
 });
@@ -69,7 +69,7 @@ $("#opin").click(() => {
     $.post('/table', 'data_opin_iic').done((raw) => {
         var data = raw.split(',');
         data.forEach(function(item) {
-            $("#db-2").prepend(`<li><a href="#tb" id="${item}"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
+            $("#db-2").prepend(`<li><a class="db2" href="#" id="${item}" onclick="showtb('data_opin_iic,' + '${item}')"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
         }, this);
     });
 });
@@ -79,7 +79,7 @@ $("#news03").click(() => {
     $.post('/table', 'data_news_iic_03').done((raw) => {
         var data = raw.split(',');
         data.forEach(function(item) {
-            $("#db-3").prepend(`<li><a href="#tb" id="${item}"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
+            $("#db-3").prepend(`<li><a class="db3" href="#" id="${item}" onclick="showtb('data_news_iic_03,' + '${item}')"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
         }, this);
     });
 });
@@ -89,7 +89,7 @@ $("#opin03").click(() => {
     $.post('/table', 'data_opin_iic_03').done((raw) => {
         var data = raw.split(',');
         data.forEach(function(item) {
-            $("#db-4").prepend(`<li><a class="db4" href="#tb" id="${item}" onclick="showtb('data_opin_iic_03,' + '${item}')"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
+            $("#db-4").prepend(`<li><a class="db4" href="#" id="${item}" onclick="showtb('data_opin_iic_03,' + '${item}')"><span class="glyphicon glyphicon-list-alt"> ${item}</a></li>`);
         }, this);
     });
 });
@@ -110,8 +110,12 @@ function showtb(tba) {
             $("#tbm-body").append(`<tr id="tbm-tr-${t}"></tr>`);
             var raw = line[t].split(',');
             raw.forEach(function(item) {
-                $(`#tbm-tr-${t}`).append(`<td>${item}</td>`);
+                $(`#tbm-tr-${t}`).append(`<td><div style="overflow:hidden; height:20px">${item}</div></td>`);
             }, this);
         }
     });
 }
+
+window.onload = () => {
+    $(".container").css({"height":  window.innerHeight.toString() +"px", "max-height":  window.innerHeight.toString() +"px"});
+};

@@ -1,5 +1,5 @@
 body {
-    background-color: ivory;
+    background-color: azure;
 }
 
 div {
@@ -11,6 +11,6 @@ div {
 }
 
 #tbm-block {
-    max-height: 800px;
-    overflow: auto;
+    height: 450px;
+    overflow-x: auto;
 }
