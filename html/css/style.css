@@ -10,7 +10,16 @@ div {
     height: 400px;
 }
 
+#echart-1 {
+    height: 220px;
+}
+
 #tbm-block {
     height: 450px;
     overflow-x: auto;
+}
+
+.jumbotron {
+    height: 450px;
+    max-height: 600px;
 }

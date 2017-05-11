@@ -78,7 +78,7 @@ const route = (req, res, content) => {
                     break;
 
                 case '/teb':
-                    var query = content.split(',');
+                    var query = content.split('.');
                     var sql = `select top(10) * from [${query[0]}].[dbo].[${query[1]}];`;
                     db.get(sql, (ans) => {
                         var str = '';
@@ -93,7 +93,7 @@ const route = (req, res, content) => {
                     break;
 
                 case '/teh':
-                    var query = content.split(',');
+                    var query = content.split('.');
                     var sql = `select COLUMN_NAME from [${query[0]}].information_schema.columns where TABLE_NAME='${query[1]}';`;
                     db.get(sql, (ans) => {
                         var str = '';
