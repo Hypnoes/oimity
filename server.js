@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
         console.log("Request:" + ` [${req.host}] ` + req.url);
         route(req, res, content);
     });
-}).listen(8080);
+}).listen(46262);
 
 // http content-type
 const type = {
