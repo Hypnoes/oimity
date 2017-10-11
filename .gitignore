@@ -1,6 +1,3 @@
-data
-data/
-data/*
-
-.vscode
 .vscode/
+node_modules/
+data/
